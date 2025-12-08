@@ -1,4 +1,5 @@
 
+<img width="256" height="256" alt="An icon for &#39;Madlab&#39; in purple" src="https://github.com/user-attachments/assets/c877753d-08ca-4c71-a3ec-3195082e0b31" />
 <img width="256" height="256" alt="An icon for &#39;Madlab&#39;" src="https://github.com/user-attachments/assets/cd3b8580-aa96-40ce-9456-12b5245237ee" />
 
 
@@ -120,6 +121,7 @@ The UI will typically be available at \`http://localhost:5173\`.
 ## License
 
 This project is licensed under the GNU General Public License v3.0 (GPLv3). See the \`LICENSE\` file for details.
+
 
 
 
