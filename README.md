@@ -1,4 +1,4 @@
-# NeuroForge 🧠
+# Madlab 🧪
 
 Copyright (C) 2025 David Bentler
 
@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Introduction
 
-NeuroForge is an advanced AI development studio designed to streamline the process of dataset management, model training, and evaluation. It combines a robust Node.js/Express backend with a powerful Python-based training engine and a modern React frontend.
+Madlab is an advanced AI development studio designed to streamline the process of dataset management, model training, and evaluation. It combines a robust Node.js/Express backend with a powerful Python-based training engine and a modern React frontend.
 
 ## Features
 
@@ -117,3 +117,4 @@ The UI will typically be available at \`http://localhost:5173\`.
 ## License
 
 This project is licensed under the GNU General Public License v3.0 (GPLv3). See the \`LICENSE\` file for details.
+
