@@ -7,6 +7,7 @@ import yaml from 'js-yaml';
 import { spawn } from 'child_process';
 import { fetchWithTimeout } from '../utils/fetch';
 import { sanitizePath, validateHFRepo, validateFilename } from '../utils/security';
+import { MAX_FILE_SIZE_BYTES } from '../utils/validation';
 import { CONFIG, getPythonPath } from '../config';
 import type { VariationItem, ToolOutput, TrainingConfig } from '../types';
 
@@ -247,7 +248,7 @@ router.delete('/:filename', async (req, res) => {
     }
 });
 
-// Multer setup
+// Multer setup with file size limits
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
         cb(null, CONFIG.DATA_DIR);
@@ -258,7 +259,20 @@ const storage = multer.diskStorage({
         cb(null, safeName);
     }
 });
-const upload = multer({ storage });
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: MAX_FILE_SIZE_BYTES // 100MB max
+    },
+    fileFilter: (_req, file, cb) => {
+        // Only allow .jsonl files
+        if (file.originalname.endsWith('.jsonl')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only .jsonl files are allowed'));
+        }
+    }
+});
 
 // GET /datasets
 router.get('/', async (_req, res) => {

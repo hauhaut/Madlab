@@ -30,6 +30,9 @@ export async function convertToGGUF(job: ConversionJob): Promise<void> {
     console.log(`Starting conversion for ${job.modelName} to ${job.quantization}`);
     broadcast({ type: 'status', payload: { message: `Converting ${job.modelName} to ${job.quantization}...` } });
 
+    // Ensure models directory exists
+    await fsPromises.mkdir(CONFIG.MODELS_DIR, { recursive: true });
+
     const pythonExec = getPythonPath();
     const hfPath = path.join(CONFIG.MODELS_DIR, 'tuned');
     const ggufFilename = `${job.modelName}-${job.quantization}.gguf`;
@@ -69,6 +72,9 @@ export async function convertToGGUF(job: ConversionJob): Promise<void> {
 export async function evaluateGGUF(modelName: string, quantization: string, limit: number = 1.0): Promise<string> {
     console.log(`Starting evaluation for ${modelName} ${quantization} (limit: ${limit})`);
     broadcast({ type: 'status', payload: { message: `Evaluating ${modelName}-${quantization}...` } });
+
+    // Ensure models directory exists for report output
+    await fsPromises.mkdir(CONFIG.MODELS_DIR, { recursive: true });
 
     const pythonExec = getPythonPath();
     const ggufPath = path.join(CONFIG.MODELS_DIR, `${modelName}-${quantization}.gguf`);

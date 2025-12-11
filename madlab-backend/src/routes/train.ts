@@ -6,6 +6,7 @@ import { startTraining, stopTraining, getStatus } from '../services/processManag
 import { buildDataset } from '../services/datasetBuilder';
 import { convertToGGUF, evaluateGGUF, judgeModel } from '../services/modelConverter';
 import { CONFIG } from '../config';
+import { isValidQuantization, isValidSharpness, isValidEvalLimit, ALLOWED_QUANTIZATIONS } from '../utils/validation';
 import type { TrainingConfig, ModelArtifact } from '../types';
 
 const router = express.Router();
@@ -44,7 +45,16 @@ router.get('/status', (_req, res) => {
 router.post('/convert', async (req, res) => {
     try {
         const { modelName, quantization } = req.body;
-        await convertToGGUF({ modelName: modelName || 'tuned', quantization: quantization || 'q8_0' });
+        const quant = quantization || 'q8_0';
+
+        // Validate quantization type
+        if (!isValidQuantization(quant)) {
+            return res.status(400).json({
+                error: { code: 'INVALID_PARAM', message: `Invalid quantization. Allowed: ${ALLOWED_QUANTIZATIONS.join(', ')}` }
+            });
+        }
+
+        await convertToGGUF({ modelName: modelName || 'tuned', quantization: quant });
         res.json({ message: 'Conversion started' });
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Conversion failed';
@@ -56,7 +66,24 @@ router.post('/convert', async (req, res) => {
 router.post('/evaluate', async (req, res) => {
     try {
         const { modelName, quantization, limit } = req.body;
-        await evaluateGGUF(modelName || 'tuned', quantization || 'q8_0', limit ? parseFloat(limit) : 1.0);
+        const quant = quantization || 'q8_0';
+        const limitNum = limit ? parseFloat(limit) : 1.0;
+
+        // Validate quantization type
+        if (!isValidQuantization(quant)) {
+            return res.status(400).json({
+                error: { code: 'INVALID_PARAM', message: `Invalid quantization. Allowed: ${ALLOWED_QUANTIZATIONS.join(', ')}` }
+            });
+        }
+
+        // Validate limit (0.01 to 1.0)
+        if (!isValidEvalLimit(limitNum)) {
+            return res.status(400).json({
+                error: { code: 'INVALID_PARAM', message: 'Limit must be between 0.01 and 1.0' }
+            });
+        }
+
+        await evaluateGGUF(modelName || 'tuned', quant, limitNum);
         res.json({ message: 'Evaluation started' });
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Evaluation failed';
@@ -68,12 +95,37 @@ router.post('/evaluate', async (req, res) => {
 router.post('/judge', async (req, res) => {
     try {
         const { modelName, quantization, limit, sharpness } = req.body;
+        const quant = quantization || 'q8_0';
+        const limitNum = limit ? parseFloat(limit) : 0.2;
+        const sharpnessNum = sharpness ? parseInt(sharpness, 10) : 50;
+
+        // Validate quantization type
+        if (!isValidQuantization(quant)) {
+            return res.status(400).json({
+                error: { code: 'INVALID_PARAM', message: `Invalid quantization. Allowed: ${ALLOWED_QUANTIZATIONS.join(', ')}` }
+            });
+        }
+
+        // Validate limit (0.01 to 1.0)
+        if (!isValidEvalLimit(limitNum)) {
+            return res.status(400).json({
+                error: { code: 'INVALID_PARAM', message: 'Limit must be between 0.01 and 1.0' }
+            });
+        }
+
+        // Validate sharpness (0-100)
+        if (!isValidSharpness(sharpnessNum)) {
+            return res.status(400).json({
+                error: { code: 'INVALID_PARAM', message: 'Sharpness must be between 0 and 100' }
+            });
+        }
+
         // Run in background (don't await fully to return response)
         judgeModel(
             modelName || 'tuned',
-            quantization || 'q8_0',
-            limit ? parseFloat(limit) : 0.2,
-            sharpness ? parseInt(sharpness) : 50
+            quant,
+            limitNum,
+            sharpnessNum
         ).catch(e => console.error('Judge Async Error:', e));
 
         res.json({ message: 'Magic Judge started' });

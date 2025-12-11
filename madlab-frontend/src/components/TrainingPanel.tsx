@@ -71,7 +71,7 @@ export function TrainingPanel() {
         });
     };
 
-    const evaluateModel = async (name: string, quant: string) => {
+    const evaluateModel = async (_name: string, quant: string) => {
         await fetch(`${API_URL}/train/evaluate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -248,21 +248,21 @@ export function TrainingPanel() {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                                 <label>
                                     Epochs
-                                    <input type="number" value={configData.train.epochs} onChange={e => updateConfig('train', 'epochs', parseInt(e.target.value))} />
+                                    <input type="number" min="1" max="100" value={configData.train.epochs} onChange={e => updateConfig('train', 'epochs', parseInt(e.target.value) || 1)} />
                                 </label>
                                 <label>
                                     Batch Size
-                                    <input type="number" value={configData.train.batch_size} onChange={e => updateConfig('train', 'batch_size', parseInt(e.target.value))} />
+                                    <input type="number" min="1" max="64" value={configData.train.batch_size} onChange={e => updateConfig('train', 'batch_size', parseInt(e.target.value) || 1)} />
                                 </label>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                                 <label>
                                     Learning Rate
-                                    <input type="text" value={configData.train.lr} onChange={e => updateConfig('train', 'lr', parseFloat(e.target.value))} />
+                                    <input type="number" min="0.000001" max="0.01" step="0.00001" value={configData.train.lr} onChange={e => updateConfig('train', 'lr', parseFloat(e.target.value) || 0.00005)} />
                                 </label>
                                 <label>
                                     Max Seq Len
-                                    <input type="number" value={configData.train.max_seq_len} onChange={e => updateConfig('train', 'max_seq_len', parseInt(e.target.value))} />
+                                    <input type="number" min="64" max="4096" value={configData.train.max_seq_len} onChange={e => updateConfig('train', 'max_seq_len', parseInt(e.target.value) || 512)} />
                                 </label>
                             </div>
                             <label>
@@ -274,7 +274,7 @@ export function TrainingPanel() {
                             </label>
                             <label>
                                 Workers
-                                <input type="number" value={configData.runtime.workers || 0} onChange={e => updateConfig('runtime', 'workers', parseInt(e.target.value))} />
+                                <input type="number" min="0" max="8" value={configData.runtime.workers || 0} onChange={e => updateConfig('runtime', 'workers', parseInt(e.target.value) || 0)} />
                             </label>
 
                             <button onClick={saveConfig} disabled={saving || status.running}>

@@ -19,9 +19,9 @@ export const CONFIG = {
     HISTORY_PATH: path.join(__dirname, '../data/model_history.json'),
     INSTILLATIONS_PATH: path.join(__dirname, '../data/instillations.json'),
 
-    // Timeouts (ms)
-    FETCH_TIMEOUT: 30000,
-    LLM_TIMEOUT: 120000,
+    // Timeouts (ms) - configurable via environment variables
+    FETCH_TIMEOUT: parseInt(process.env.FETCH_TIMEOUT || '60000', 10),   // 60s default
+    LLM_TIMEOUT: parseInt(process.env.LLM_TIMEOUT || '300000', 10),      // 5 min default
 
     // Rate Limiting
     RATE_LIMIT_WINDOW_MS: 15 * 60 * 1000, // 15 minutes

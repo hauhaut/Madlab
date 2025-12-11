@@ -6,6 +6,9 @@ import type { InstillationPair, InstillationsData } from '../types';
 
 const router = express.Router();
 
+// Write lock to prevent race conditions on concurrent writes
+let writeLock = Promise.resolve();
+
 // Helper to read data
 async function readData(): Promise<InstillationsData> {
     try {
@@ -16,10 +19,14 @@ async function readData(): Promise<InstillationsData> {
     }
 }
 
-// Helper to write data - invalidates cache after write
+// Helper to write data - uses lock to prevent race conditions, invalidates cache after write
 async function writeData(data: InstillationsData): Promise<void> {
-    await fs.writeFile(CONFIG.INSTILLATIONS_PATH, JSON.stringify(data, null, 2));
-    invalidateCache();
+    const writeOperation = writeLock.then(async () => {
+        await fs.writeFile(CONFIG.INSTILLATIONS_PATH, JSON.stringify(data, null, 2));
+        invalidateCache();
+    });
+    writeLock = writeOperation.catch(() => {}); // Prevent lock from breaking on error
+    return writeOperation;
 }
 
 // GET /instillations

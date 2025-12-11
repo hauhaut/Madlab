@@ -37,8 +37,10 @@ if (!fs.existsSync(CONFIG.INSTILLATIONS_PATH)) {
 
 const app = express();
 
-// Start services
-startFileMonitor();
+// Start services (async initialization)
+(async () => {
+    await startFileMonitor();
+})();
 
 // Middleware - CORS with specific origins
 app.use(cors({

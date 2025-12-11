@@ -11,6 +11,16 @@ SEED = 42
 random.seed(SEED)
 torch.manual_seed(SEED)
 
+def get_config_value(cfg, keys, default):
+    """Safely get nested config value with default fallback."""
+    try:
+        value = cfg
+        for key in keys:
+            value = value[key]
+        return value
+    except (KeyError, TypeError):
+        return default
+
 class PairDataset(Dataset):
     def __init__(self, path, tokenizer, max_len=512):
         self.samples = []
@@ -214,7 +224,12 @@ def main():
     print(json.dumps({"message": f"Saving model to {save_path}"}))
     model.save_pretrained(save_path)
     tok.save_pretrained(save_path)
-    print(json.dumps({"message": "Training complete", "saved_to": save_path}))
+
+    # GPU memory cleanup
+    if device.type == 'cuda':
+        torch.cuda.empty_cache()
+
+    print(json.dumps({"status": "complete", "message": "Training complete", "saved_to": save_path}))
 
 if __name__ == '__main__':
     main()

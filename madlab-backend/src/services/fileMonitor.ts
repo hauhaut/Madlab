@@ -4,11 +4,11 @@ import { broadcast } from '../server';
 import fs from 'fs/promises';
 import { CONFIG } from '../config';
 
-export function startFileMonitor(): void {
+export async function startFileMonitor(): Promise<void> {
     console.log(`Starting file monitor on ${CONFIG.MODELS_DIR}`);
 
-    // Ensure models dir exists
-    fs.mkdir(CONFIG.MODELS_DIR, { recursive: true }).catch(console.error);
+    // Ensure models dir exists before starting watcher
+    await fs.mkdir(CONFIG.MODELS_DIR, { recursive: true });
 
     const watcher = chokidar.watch(CONFIG.MODELS_DIR, {
         persistent: true,
@@ -16,11 +16,19 @@ export function startFileMonitor(): void {
     });
 
     watcher.on('add', async (filePath) => {
-        await emitSize(filePath);
+        try {
+            await emitSize(filePath);
+        } catch (e) {
+            console.error('Error emitting file size on add:', e);
+        }
     });
 
     watcher.on('change', async (filePath) => {
-        await emitSize(filePath);
+        try {
+            await emitSize(filePath);
+        } catch (e) {
+            console.error('Error emitting file size on change:', e);
+        }
     });
 }
 

@@ -72,7 +72,27 @@ venv\Scripts\activate
 # Linux/Mac
 source venv/bin/activate
 
+# For GPU training - first check your CUDA version: nvidia-smi
+# Then install PyTorch with matching CUDA version BEFORE requirements.txt:
+
+# CUDA 11.8 (older GPUs, GTX 10xx/16xx, RTX 20xx):
+pip install torch --index-url https://download.pytorch.org/whl/cu118
+
+# CUDA 12.1 (RTX 30xx, RTX 40xx):
+pip install torch --index-url https://download.pytorch.org/whl/cu121
+
+# CUDA 12.4 (RTX 40xx, newer drivers):
+pip install torch --index-url https://download.pytorch.org/whl/cu124
+
+# CUDA 12.6 (latest stable, RTX 40xx/50xx):
+pip install torch --index-url https://download.pytorch.org/whl/cu126
+
+# Then install remaining dependencies:
 pip install -r requirements.txt
+
+# For CPU-only (no GPU, slower but works everywhere):
+pip install -r requirements.txt
+
 cd ..
 ```
 
@@ -105,6 +125,10 @@ Create `madlab-backend/.env`:
 PORT=8080
 LM_STUDIO_URL=http://localhost:1234
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Optional: Increase timeouts for slower systems (in milliseconds)
+# FETCH_TIMEOUT=60000    # Default: 60s - for HuggingFace API calls
+# LLM_TIMEOUT=300000     # Default: 5min - for LLM inference calls
 ```
 
 ### Frontend (.env)
@@ -182,9 +206,14 @@ madlab/
 ## Troubleshooting
 
 ### "CUDA not available"
-- Check `nvidia-smi` works
-- Reinstall PyTorch with CUDA: `pip install torch --index-url https://download.pytorch.org/whl/cu118`
-- Or just use CPU: set device to "CPU" in the UI
+- Check `nvidia-smi` works in terminal - note the CUDA version shown
+- Make sure you installed PyTorch with matching CUDA support (see Setup section)
+- Reinstall PyTorch with your CUDA version:
+  - CUDA 11.x: `pip install torch --index-url https://download.pytorch.org/whl/cu118`
+  - CUDA 12.1-12.3: `pip install torch --index-url https://download.pytorch.org/whl/cu121`
+  - CUDA 12.4-12.5: `pip install torch --index-url https://download.pytorch.org/whl/cu124`
+  - CUDA 12.6+: `pip install torch --index-url https://download.pytorch.org/whl/cu126`
+- Or just use CPU: set device to "CPU" in the UI (slower but works)
 
 ### "Model not found"
 - Check the HuggingFace model ID is correct
@@ -194,6 +223,11 @@ madlab/
 - Use GPU if possible
 - Reduce `max_seq_len` (default 512)
 - Reduce batch size if running out of memory
+
+### Timeout errors / Operations timing out
+- Increase timeouts in `.env` file (see Configuration section)
+- Set `FETCH_TIMEOUT=120000` for slow HuggingFace API calls
+- Set `LLM_TIMEOUT=600000` for very slow LLM inference
 
 ### "Failed to connect to LM Studio"
 - Start LM Studio and load a model
