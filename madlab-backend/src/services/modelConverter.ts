@@ -37,7 +37,9 @@ export async function convertToGGUF(job: ConversionJob): Promise<void> {
     const hfPath = path.join(CONFIG.MODELS_DIR, 'tuned');
     const ggufFilename = `${job.modelName}-${job.quantization}.gguf`;
     const ggufPath = path.join(CONFIG.MODELS_DIR, ggufFilename);
-    const scriptPath = path.join(CONFIG.TRAINER_DIR, 'convert_hf_to_gguf.py');
+
+    // Use wrapper that finds converter from installed packages
+    const scriptPath = path.join(CONFIG.TRAINER_DIR, 'run_converter.py');
 
     const args = [
         scriptPath,
